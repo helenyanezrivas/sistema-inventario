@@ -105,7 +105,7 @@ inventario/
 ### 1. Clonar o copiar el proyecto
 
 ```bash
-git clone https://github.com/helenyanezrivas/sistema-inventario-php.git
+git clone https://github.com/helenyanezrivas/sistema-inventario.git
 ```
 
 Ubica el proyecto en `C:\xampp\htdocs\inventario`.
@@ -150,9 +150,9 @@ http://localhost/inventario/
 | Correo | `admin@demo.local` |
 | Contraseña | `AdminDemo123!` |
 
-Estas credenciales son públicas y solo están destinadas a una demostración local. Si utilizas el proyecto fuera de una demostración, cambia la contraseña o crea una nueva cuenta administradora. Desde la cuenta demo puedes crear usuarios vendedores o administradores.
+Estas credenciales son ficticias, públicas y están destinadas exclusivamente a una demostración local. El archivo `inventario.sql` no contiene usuarios reales, productos ni ventas reales; incluye únicamente esta cuenta administradora demo. Desde ella puedes crear usuarios vendedores o administradores.
 
-## Decisiones técnicas
+## Alcance del proyecto\n\nEste repositorio corresponde a un proyecto de portafolio preparado para ejecutarse localmente con XAMPP. No pretende presentarse como una aplicación SaaS ni como una arquitectura empresarial desplegada en producción.\n\n## Decisiones técnicas
 
 - PHP procedural organizado por módulos y vistas.
 - MySQL con tablas InnoDB, claves foráneas y restricciones de integridad.
