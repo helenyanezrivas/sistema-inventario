@@ -1,6 +1,8 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
 require_once "../../includes/security.php";
@@ -9,12 +11,7 @@ require_once "../../includes/security.php";
 // VERIFICAR SESIÓN
 // =====================================================
 
-if (!isset($_SESSION["usuario_id"])) {
-
-    header("Location: ../../login.php");
-    exit;
-
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 
 // =====================================================
@@ -317,9 +314,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if (!$stmtExiste) {
 
-            $errores[] =
-                "Error al comprobar los datos: "
-                . $conexion->error;
+            $errores[] = mensaje_error_tecnico(
+                "Error al comprobar los datos: " . $conexion->error
+            );
 
         } else {
 
@@ -419,9 +416,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if (!$stmtCrear) {
 
-            $errores[] =
-                "Error al preparar la creación del usuario: "
-                . $conexion->error;
+            $errores[] = mensaje_error_tecnico(
+                "Error al preparar la creación del usuario: " . $conexion->error
+            );
 
         } else {
 
@@ -448,9 +445,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             } else {
 
-                $errores[] =
-                    "Error al crear el usuario: "
-                    . $stmtCrear->error;
+                $errores[] = mensaje_error_tecnico(
+                    "Error al crear el usuario: " . $stmtCrear->error
+                );
 
                 $stmtCrear->close();
 

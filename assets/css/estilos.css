@@ -2,16 +2,157 @@
    ESTILOS GENERALES
 ===================================================== */
 
+:root {
+    --color-principal: #5d3b94;
+}
+
 body {
     background-color: #f4f4f8;
 }
 
 .navbar {
-    background-color: #6f42c1 !important;
+    background-color: var(--color-principal) !important;
 }
 
-.navbar-brand {
+.navbar-app {
+    min-height: 68px;
+    padding: 0.65rem 0;
+    box-shadow: 0 2px 10px rgba(44, 24, 75, 0.18);
+}
+
+.navbar-app-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.navbar-modulos {
+    gap: 0.2rem;
+}
+
+.navbar-module {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 0.55rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.48rem 0.65rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.navbar-module:hover,
+.navbar-module:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.navbar-module.active {
+    background-color: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
     font-weight: 600;
+}
+
+.navbar-app .navbar-session {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.8rem;
+    justify-content: flex-end;
+    white-space: nowrap;
+}
+
+.navbar-app .navbar-user-info,
+.navbar-app .navbar-user-info > i,
+.navbar-app .navbar-user-name {
+    color: #ffffff;
+}
+
+.navbar-app .navbar-user-info {
+    align-items: center;
+    display: flex;
+    gap: 0.45rem;
+}
+
+.navbar-user-info > i {
+    font-size: 1.25rem;
+}
+
+.navbar-user-name {
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.navbar-app .navbar-session-divider {
+    background-color: rgba(255, 255, 255, 0.45);
+    height: 1.25rem;
+    width: 1px;
+}
+
+.navbar-app .navbar-logout,
+.navbar-app .navbar-logout:visited {
+    align-items: center;
+    border-radius: 0.5rem;
+    color: rgba(255, 255, 255, 0.88);
+    display: inline-flex;
+    font-size: 0.85rem;
+    gap: 0.35rem;
+    padding: 0.45rem 0.55rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.navbar-app .navbar-logout:hover,
+.navbar-app .navbar-logout:focus,
+.navbar-app .navbar-logout:focus-visible {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+@media (max-width: 991.98px) {
+    .navbar-app .container-fluid {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .navbar-app .navbar-collapse {
+        display: none;
+        flex-basis: 100%;
+        width: 100%;
+    }
+
+    .navbar-app .navbar-collapse.navbar-collapse-open {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .navbar-modulos {
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        margin-top: 0.7rem;
+        padding-top: 0.55rem;
+        width: 100%;
+    }
+
+    .navbar-module {
+        padding: 0.6rem 0.65rem;
+    }
+
+    .navbar-app .navbar-session {
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-top: 0.55rem;
+        padding-top: 0.7rem;
+        width: 100%;
+    }
+
+    .navbar-session-divider {
+        display: none;
+    }
 }
 
 
@@ -63,12 +204,6 @@ body {
     color: #212529;
 }
 
-.dashboard-section-title {
-    font-weight: 600;
-    color: #212529;
-}
-
-
 /* =====================================================
    TARJETAS DE ESTADÍSTICAS
 ===================================================== */
@@ -115,12 +250,7 @@ body {
 
 .icon-productos {
     background-color: #e9ddff;
-    color: #6f42c1;
-}
-
-.icon-categorias {
-    background-color: #dff4ff;
-    color: #0d6efd;
+    color: var(--color-principal);
 }
 
 .icon-ventas {
@@ -145,35 +275,6 @@ body {
 
 
 /* =====================================================
-   INFORMACIÓN DEL DASHBOARD
-===================================================== */
-
-.dashboard-info-card {
-    border: none;
-    border-radius: 15px;
-
-    box-shadow:
-        0 4px 15px rgba(0, 0, 0, 0.07);
-}
-
-.dashboard-small-icon {
-    width: 45px;
-    height: 45px;
-
-    border-radius: 10px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background-color: #e9ddff;
-    color: #6f42c1;
-
-    font-size: 20px;
-}
-
-
-/* =====================================================
    TABLAS DEL DASHBOARD
 ===================================================== */
 
@@ -185,162 +286,25 @@ body {
         0 4px 15px rgba(0, 0, 0, 0.07);
 }
 
-
-/* =====================================================
-   BIENVENIDA
-===================================================== */
-
-.welcome-card {
-    border: none;
-    border-radius: 15px;
-
-    box-shadow:
-        0 4px 15px rgba(0, 0, 0, 0.07);
+.dashboard-chart-area,
+.dashboard-chart-empty {
+    height: 360px;
 }
 
-
-/* =====================================================
-   RESUMEN DEL MES
-===================================================== */
-
-.monthly-card {
-    border: none;
-    border-radius: 15px;
-
-    box-shadow:
-        0 4px 15px rgba(0, 0, 0, 0.07);
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
+.dashboard-chart-area {
+    position: relative;
 }
 
-.monthly-card:hover {
-    transform: translateY(-3px);
-
-    box-shadow:
-        0 7px 20px rgba(0, 0, 0, 0.10);
-}
-
-.monthly-icon {
-    width: 50px;
-    height: 50px;
-
-    border-radius: 12px;
-
-    display: flex;
+.dashboard-chart-empty {
     align-items: center;
+    display: flex;
     justify-content: center;
-
-    font-size: 22px;
+    text-align: center;
 }
 
-.monthly-card h3 {
-    font-size: 27px;
-    font-weight: 700;
-}
-
-.monthly-description {
-    margin-top: 18px;
-
-    padding-top: 12px;
-
-    border-top: 1px solid #eeeeee;
-
-    color: #777;
-
-    font-size: 13px;
-}
-
-.icon-mes {
-    background-color: #eee5ff;
-    color: #6f42c1;
-}
-
-.icon-promedio {
-    background-color: #e5f0ff;
-    color: #0d6efd;
-}
-
-
-/* =====================================================
-   ACCIONES RÁPIDAS
-===================================================== */
-
-.quick-action-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-}
-
-.quick-action-card {
-    border: none;
-    border-radius: 15px;
-
-    box-shadow:
-        0 4px 15px rgba(0, 0, 0, 0.07);
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-.quick-action-card:hover {
-    transform: translateY(-3px);
-
-    box-shadow:
-        0 7px 20px rgba(0, 0, 0, 0.10);
-}
-
-.quick-action-card .card-body {
-    min-height: 105px;
-
-    display: flex;
-    align-items: center;
-}
-
-.quick-action-icon {
-    width: 45px;
-    height: 45px;
-
-    flex-shrink: 0;
-
-    border-radius: 10px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background-color: #e9ddff;
-    color: #6f42c1;
-
-    font-size: 20px;
-}
-
-.quick-action-content {
-    display: flex;
-    flex-direction: column;
-
-    margin-left: 14px;
-}
-
-.quick-action-content strong {
-    color: #212529;
-    font-size: 15px;
-}
-
-.quick-action-content small {
-    color: #777;
-
-    margin-top: 3px;
-
-    font-size: 12px;
-}
-
-.quick-action-arrow {
-    margin-left: auto;
-
-    color: #6f42c1;
-
-    font-size: 17px;
+@media (max-width: 767.98px) {
+    .dashboard-chart-area,
+    .dashboard-chart-empty {
+        height: 300px;
+    }
 }

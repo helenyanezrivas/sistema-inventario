@@ -1,8 +1,11 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
+require_once "../../includes/security.php";
 require_once "../../vendor/autoload.php";
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -12,14 +15,28 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 
 
+function proteger_formula_excel($valor)
+{
+    if (
+        !is_string($valor)
+        || $valor === ""
+    ) {
+        return $valor;
+    }
+
+    if (in_array($valor[0], ["=", "+", "-", "@"], true)) {
+        return "'" . $valor;
+    }
+
+    return $valor;
+}
+
+
 // =====================================================
 // VERIFICAR SESIÓN
 // =====================================================
 
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: ../../login.php");
-    exit;
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 
 // =====================================================
@@ -141,7 +158,7 @@ $sql .= "
 $stmt = $conexion->prepare($sql);
 
 if (!$stmt) {
-    die("Error al preparar la consulta: " . $conexion->error);
+    abortar_error_tecnico("Error al preparar la consulta: " . $conexion->error);
 }
 
 
@@ -163,7 +180,7 @@ if (!empty($parametros)) {
 // =====================================================
 
 if (!$stmt->execute()) {
-    die("Error al obtener los productos: " . $stmt->error);
+    abortar_error_tecnico("Error al obtener los productos: " . $stmt->error);
 }
 
 
@@ -239,22 +256,24 @@ while ($producto = $resultado->fetch_assoc()) {
 
     $hoja->setCellValue(
         "B" . $fila,
-        $producto["codigo"]
+        proteger_formula_excel($producto["codigo"])
     );
 
     $hoja->setCellValue(
         "C" . $fila,
-        $producto["nombre"]
+        proteger_formula_excel($producto["nombre"])
     );
 
     $hoja->setCellValue(
         "D" . $fila,
-        $producto["descripcion"] ?? ""
+        proteger_formula_excel(
+            $producto["descripcion"] ?? ""
+        )
     );
 
     $hoja->setCellValue(
         "E" . $fila,
-        $producto["categoria"]
+        proteger_formula_excel($producto["categoria"])
     );
 
     $hoja->setCellValue(

@@ -1,294 +1,176 @@
 # Sistema de Inventario
 
-Sistema web de gestión de inventario desarrollado en PHP y MySQL, orientado a la administración de productos, categorías, usuarios y ventas.
+Aplicación web de gestión de inventario desarrollada como proyecto de portafolio. Permite administrar productos, categorías, usuarios y ventas desde una interfaz PHP conectada a MySQL.
 
-## Descripción
+## Resumen técnico
 
-Aplicación web desarrollada como proyecto de portafolio para gestionar de manera centralizada el inventario de una empresa.
-
-El sistema permite administrar productos y categorías, controlar el stock, registrar ventas y gestionar usuarios según su rol de acceso.
-
-## Funcionalidades
-
-### 📦 Productos
-
-- Crear productos.
-- Editar productos.
-- Eliminar productos cuando no existen ventas asociadas.
-- Generación automática de códigos de producto.
-- Gestión de categorías.
-- Control de stock.
-- Definición de stock mínimo.
-- Filtros por nombre, código, stock y estado.
-- Exportación de productos a Excel y PDF.
-
-### 🏷️ Categorías
-
-- Crear categorías.
-- Editar categorías.
-- Eliminar categorías cuando no tienen productos asociados.
-- Gestión del estado de las categorías.
-- Visualización de la cantidad de productos asociados a cada categoría.
-
-### 👥 Usuarios
-
-- Gestión de usuarios.
-- Creación y edición de usuarios.
-- Roles de administrador y vendedor.
-- Activación y desactivación de usuarios.
-- Restricción de acceso a la administración de usuarios para administradores.
-- Contraseñas almacenadas mediante hash.
-- Protección de acciones sensibles mediante tokens CSRF.
-
-### 🛒 Ventas
-
-- Registro de ventas.
-- Selección de productos para registrar una venta.
-- Validación de stock disponible.
-- Descuento automático del stock al registrar una venta.
-- Consulta del detalle de cada venta.
-- Filtros por fecha, usuario y estado.
-- Exportación de ventas a Excel y PDF.
-- Anulación de ventas.
-- Restauración automática del stock al anular una venta.
-- Conservación del historial de ventas anuladas.
-- Protección de operaciones sensibles mediante POST y CSRF.
-
-### 📊 Panel de control
-
-- Resumen general del inventario.
-- Cantidad de productos activos.
-- Cantidad de categorías activas.
-- Cantidad de ventas realizadas.
-- Indicadores de ventas del día.
-- Total vendido durante el día.
-- Productos con stock bajo.
-- Visualización de las últimas ventas registradas.
-- Gráfico de ventas de los últimos 7 días.
-- Gráfico de ventas por categoría del mes actual.
-- Resumen mensual con cantidad de ventas, total vendido y promedio por venta.
-
-### 🔐 Seguridad y control de acceso
-
-- Inicio de sesión mediante usuario y contraseña.
-- Verificación de contraseñas mediante `password_verify()`.
-- Contraseñas protegidas mediante hash.
-- Protección de páginas internas mediante sesiones.
-- Control de acceso según rol.
-- Regeneración del ID de sesión después del inicio de sesión.
-- Cierre de sesión y destrucción de la sesión.
-- Protección CSRF para formularios y operaciones sensibles.
-- Uso de consultas preparadas para operaciones parametrizadas.
-- Uso de transacciones para el registro y anulación de ventas.
+- Gestión de productos, categorías, usuarios y ventas con control de roles.
+- Registro y anulación de ventas mediante transacciones para mantener consistente el stock.
+- Dashboard con indicadores, productos de bajo stock y gráficos de ventas.
+- Exportación de productos y ventas a Excel y PDF.
+- Autenticación, recuperación de contraseña por SMTP y control de intentos de inicio de sesión.
+- Medidas de seguridad aplicadas a sesiones, formularios, consultas y exportaciones.
 
 ## Tecnologías utilizadas
 
-- PHP
-- MySQL
-- HTML5
-- CSS3
-- JavaScript
-- Bootstrap
-- Bootstrap Icons
+- PHP 8.2
+- MySQL con InnoDB
+- HTML5, CSS3 y JavaScript
+- Bootstrap 5 y Bootstrap Icons
 - Chart.js
 - Composer
+- PhpSpreadsheet
+- Dompdf
+- PHPMailer
 
-### Librerías
+## Funcionalidades principales
 
-- **PhpSpreadsheet** — generación de archivos Excel.
-- **Dompdf** — generación de documentos PDF.
+### Productos y categorías
+
+- Crear, editar, listar y eliminar productos y categorías.
+- Generación automática de códigos de producto.
+- Control de stock y visualización de productos con stock bajo.
+- Filtros por búsqueda, estado y stock.
+- Exportación de productos a Excel y PDF.
+
+### Usuarios y acceso
+
+- Roles de administrador y vendedor.
+- Creación, edición, activación y desactivación de usuarios desde el rol administrador.
+- Inicio de sesión, cierre de sesión, recuperación y restablecimiento de contraseña.
+- Límite de intentos fallidos de inicio de sesión por cuenta.
+
+### Ventas y reportes
+
+- Registro de ventas con validación de disponibilidad de stock.
+- Descuento automático de stock al registrar una venta.
+- Consulta de detalle, filtros y exportación de ventas a Excel y PDF.
+- Anulación de ventas con restauración del stock e historial conservado.
+
+### Dashboard
+
+- Resumen de productos, categorías, ventas y ventas del día.
+- Productos con stock bajo y últimas ventas.
+- Gráficos de ventas de los últimos siete días y por categoría del mes actual.
+
+## Seguridad implementada
+
+- Contraseñas almacenadas con `password_hash()` y verificadas con `password_verify()`.
+- Consultas preparadas para operaciones con parámetros.
+- Protección CSRF en formularios y acciones sensibles.
+- Regeneración del ID de sesión al iniciar sesión.
+- Cookies de sesión con `HttpOnly`, `SameSite=Lax`, modo estricto y `Secure` al usar HTTPS.
+- Validación de que el usuario de la sesión continúe activo y conserve su rol en MySQL.
+- Límite de intentos de inicio de sesión almacenado en MySQL.
+- Errores técnicos registrados mediante `error_log()` sin exponer detalles al usuario.
+- Protección contra XSS en datos del gráfico y contra inyección de fórmulas en exportaciones Excel.
 
 ## Estructura del proyecto
 
 ```text
 inventario/
-│
 ├── assets/
-│   ├── css/
-│   ├── img/
-│   └── js/
-│
+│   └── css/
 ├── config/
-│   └── database.php
-│
+│   ├── database.php
+│   └── correo.example.php
 ├── includes/
+│   ├── error_handler.php
 │   ├── navbar.php
-│   └── security.php
-│
+│   ├── security.php
+│   └── session.php
 ├── views/
 │   ├── categorias/
 │   ├── productos/
 │   ├── usuarios/
 │   └── ventas/
-│
-├── .gitignore
 ├── composer.json
 ├── composer.lock
-├── index.php
 ├── inventario.sql
+├── index.php
 ├── login.php
+├── recuperar.php
+├── restablecer.php
 └── logout.php
 ```
 
-## Base de datos
-
-El sistema utiliza MySQL para almacenar y gestionar la información.
-
-Principales tablas:
-
-- `usuarios`
-- `categorias`
-- `productos`
-- `ventas`
-- `detalle_ventas`
-
-Las relaciones entre las tablas permiten mantener la integridad de la información y controlar la asociación entre usuarios, productos, categorías y ventas.
-
-La estructura de la base de datos se encuentra disponible en el archivo:
-
-```text
-inventario.sql
-```
-
-Este archivo contiene la estructura de las tablas y sus relaciones, pero no incluye los datos actuales del sistema.
-
-## Instalación
+## Instalación rápida con XAMPP
 
 ### Requisitos
 
-- XAMPP
-- PHP
-- MySQL
-- Composer
-- Navegador web
+- XAMPP con Apache, MySQL y PHP 8.2.
+- Composer.
+- Extensiones PHP: `mysqli`, `mbstring`, `dom`, `gd`, `zip`, `xml` y `openssl`.
 
-### 1. Clonar el repositorio
+### 1. Clonar o copiar el proyecto
 
 ```bash
 git clone https://github.com/helenyanezrivas/sistema-inventario-php.git
 ```
 
-### 2. Ubicar el proyecto
+Ubica el proyecto en `C:\xampp\htdocs\inventario`.
 
-Colocar la carpeta dentro del directorio `htdocs` de XAMPP:
+### 2. Instalar dependencias
 
-```text
-C:\xampp\htdocs\inventario
-```
-
-### 3. Crear la base de datos
-
-Iniciar **Apache** y **MySQL** desde el panel de XAMPP.
-
-Luego abrir **phpMyAdmin** y crear una base de datos llamada:
-
-```text
-inventario
-```
-
-### 4. Importar la estructura de la base de datos
-
-En phpMyAdmin:
-
-1. Seleccionar la base de datos `inventario`.
-2. Ir a la pestaña **Importar**.
-3. Seleccionar el archivo `inventario.sql` del proyecto.
-4. Ejecutar la importación.
-
-El archivo `inventario.sql` creará las tablas necesarias para el funcionamiento del sistema.
-
-### 5. Configurar la conexión
-
-Editar:
-
-```text
-config/database.php
-```
-
-y configurar los datos correspondientes al servidor MySQL local.
-
-Ejemplo para una instalación local de XAMPP:
-
-```php
-$host = "localhost";
-$usuario = "root";
-$password = "";
-$base_datos = "inventario";
-```
-
-### 6. Instalar dependencias
-
-Desde la carpeta del proyecto ejecutar:
+Desde la carpeta del proyecto ejecuta:
 
 ```bash
 composer install
 ```
 
-### 7. Iniciar XAMPP
+### 3. Importar la base de datos
 
-Activar:
+1. Inicia Apache y MySQL desde XAMPP.
+2. Crea una base de datos llamada `inventario` en phpMyAdmin.
+3. Importa el archivo `inventario.sql` en esa base de datos.
+4. Revisa los datos de conexión en `config/database.php` si tu entorno local usa valores distintos.
 
-- Apache
-- MySQL
+### 4. Configurar correo para recuperación de contraseña
 
-### 8. Acceder al sistema
+Copia la plantilla pública:
 
-Abrir en el navegador:
+```powershell
+Copy-Item config\correo.example.php config\correo.php
+```
+
+Edita `config/correo.php` con el host, puerto, usuario, contraseña y correo remitente de tu proveedor SMTP. Este archivo contiene credenciales locales y está excluido de Git.
+
+### 5. Acceder al sistema
+
+Abre:
 
 ```text
 http://localhost/inventario/
 ```
 
-## Flujo de ventas
+## Cuenta demo
 
-Las ventas registradas quedan almacenadas como parte del historial del sistema.
-
-Una venta realizada no se elimina físicamente. En caso de existir un error, puede ser anulada.
-
-Al anular una venta:
-
-1. Se cambia su estado a `anulada`.
-2. Se conservan sus datos históricos.
-3. Se restauran las cantidades de productos al stock.
-4. La venta queda disponible para consulta.
-
-## Gestión de roles
-
-El sistema contempla dos roles:
-
-| Rol | Acceso |
+| Campo | Valor |
 |---|---|
-| Administrador | Acceso completo y gestión de usuarios |
-| Vendedor | Operaciones permitidas para ventas e inventario |
+| Correo | `admin@demo.local` |
+| Contraseña | `AdminDemo123!` |
 
-## Exportaciones
+Estas credenciales son públicas y solo están destinadas a una demostración local. Si utilizas el proyecto fuera de una demostración, cambia la contraseña o crea una nueva cuenta administradora. Desde la cuenta demo puedes crear usuarios vendedores o administradores.
 
-El sistema permite generar reportes en:
+## Decisiones técnicas
 
-- Excel
-- PDF
+- PHP procedural organizado por módulos y vistas.
+- MySQL con tablas InnoDB, claves foráneas y restricciones de integridad.
+- Transacciones para registrar ventas y anularlas sin desincronizar el stock.
+- Control de acceso basado en roles y validación centralizada de sesiones activas.
 
-Las exportaciones incluyen información relacionada con productos y ventas según los filtros disponibles en cada módulo.
+## Capturas
 
-## Objetivo del proyecto
+> Pendiente: agregar una captura del dashboard.
 
-Este proyecto fue desarrollado para aplicar conocimientos de:
+> Pendiente: agregar una captura del registro de venta y sus exportaciones.
 
-- Desarrollo web con PHP.
-- Gestión de bases de datos MySQL.
-- Consultas SQL.
-- Control de sesiones y autenticación.
-- Gestión de inventario.
-- Manejo de transacciones.
-- Generación de reportes.
-- Control de roles y permisos.
-- Protección CSRF.
-- Integración de librerías mediante Composer.
+## Alcance
+
+Este es un proyecto de portafolio orientado a ejecución local con XAMPP. No pretende ser un SaaS empresarial desplegado ni incluye API REST, arquitectura MVC o pruebas automatizadas.
 
 ## Autor
 
 **Helen Yáñez Rivas**
-
 Ingeniería en Ejecución en Computación e Informática
-
 GitHub: [helenyanezrivas](https://github.com/helenyanezrivas)

@@ -1,9 +1,18 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
 require_once "../../includes/security.php";
+
+
+// =====================================================
+// VERIFICAR SESIÓN
+// =====================================================
+
+validar_sesion_activa($conexion, "../../login.php");
 
 
 // =====================================================
@@ -11,16 +20,6 @@ require_once "../../includes/security.php";
 // =====================================================
 
 csrf_token();
-
-
-// =====================================================
-// VERIFICAR SESIÓN
-// =====================================================
-
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: ../../login.php");
-    exit;
-}
 
 
 // =====================================================
@@ -63,10 +62,7 @@ $sqlUsuarios = "
 $resultadoUsuarios = $conexion->query($sqlUsuarios);
 
 if (!$resultadoUsuarios) {
-    die(
-        "Error al obtener los usuarios: "
-        . $conexion->error
-    );
+    abortar_error_tecnico("Error al obtener los usuarios: " . $conexion->error);
 }
 
 
@@ -174,10 +170,7 @@ $sql .= "
 $stmt = $conexion->prepare($sql);
 
 if (!$stmt) {
-    die(
-        "Error al preparar la consulta: "
-        . $conexion->error
-    );
+    abortar_error_tecnico("Error al preparar la consulta: " . $conexion->error);
 }
 
 
@@ -200,10 +193,7 @@ if (!empty($parametros)) {
 
 if (!$stmt->execute()) {
 
-    die(
-        "Error al obtener las ventas: "
-        . $stmt->error
-    );
+    abortar_error_tecnico("Error al obtener las ventas: " . $stmt->error);
 }
 
 $resultado = $stmt->get_result();
@@ -827,9 +817,8 @@ include "../../includes/navbar.php";
 
                             if (!$stmtDetalle) {
 
-                                die(
-                                    "Error al preparar detalle: "
-                                    . $conexion->error
+                                abortar_error_tecnico(
+                                    "Error al preparar detalle: " . $conexion->error
                                 );
 
                             }
@@ -843,9 +832,8 @@ include "../../includes/navbar.php";
 
                             if (!$stmtDetalle->execute()) {
 
-                                die(
-                                    "Error al obtener detalle: "
-                                    . $stmtDetalle->error
+                                abortar_error_tecnico(
+                                    "Error al obtener detalle: " . $stmtDetalle->error
                                 );
 
                             }

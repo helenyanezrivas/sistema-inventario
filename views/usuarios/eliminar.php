@@ -1,6 +1,8 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
 require_once "../../includes/security.php";
@@ -9,10 +11,7 @@ require_once "../../includes/security.php";
 // VERIFICAR SESIÓN
 // =====================================================
 
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: ../../login.php");
-    exit;
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 // =====================================================
 // VERIFICAR ROL DE ADMINISTRADOR
@@ -253,10 +252,7 @@ $stmtUsuario = $conexion->prepare($sqlUsuario);
 
 if (!$stmtUsuario) {
 
-    die(
-        "Error al preparar la consulta: "
-        . $conexion->error
-    );
+    abortar_error_tecnico("Error al preparar la consulta: " . $conexion->error);
 }
 
 $stmtUsuario->bind_param(
@@ -314,9 +310,8 @@ if ($usuario["rol"] === "admin") {
 
     if (!$stmtAdmins) {
 
-        die(
-            "Error al comprobar administradores: "
-            . $conexion->error
+        abortar_error_tecnico(
+            "Error al comprobar administradores: " . $conexion->error
         );
     }
 
@@ -440,9 +435,8 @@ $stmtDesactivar =
 
 if (!$stmtDesactivar) {
 
-    die(
-        "Error al preparar la desactivación: "
-        . $conexion->error
+    abortar_error_tecnico(
+        "Error al preparar la desactivación: " . $conexion->error
     );
 }
 
@@ -453,8 +447,9 @@ $stmtDesactivar->bind_param(
 
 if (!$stmtDesactivar->execute()) {
 
-    $error =
-        $stmtDesactivar->error;
+    $error = mensaje_error_tecnico(
+        "Error al desactivar el usuario: " . $stmtDesactivar->error
+    );
 
     $stmtDesactivar->close();
 

@@ -1,17 +1,17 @@
 <?php
 
-session_start();
+require_once "includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "config/database.php";
+require_once "includes/security.php";
 
 // =====================================================
 // VERIFICAR SESIÓN
 // =====================================================
 
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: login.php");
-    exit;
-}
+validar_sesion_activa($conexion, "login.php");
 
 
 // =====================================================
@@ -29,44 +29,10 @@ $sqlProductos = "
 $resultadoProductos = $conexion->query($sqlProductos);
 
 if (!$resultadoProductos) {
-    die("Error al obtener productos: " . $conexion->error);
+    abortar_error_tecnico("Error al obtener productos: " . $conexion->error);
 }
 
 $totalProductos = (int) $resultadoProductos->fetch_assoc()["total"];
-
-
-// Categorías activas
-
-$sqlCategorias = "
-    SELECT COUNT(*) AS total
-    FROM categorias
-    WHERE estado = 1
-";
-
-$resultadoCategorias = $conexion->query($sqlCategorias);
-
-if (!$resultadoCategorias) {
-    die("Error al obtener categorías: " . $conexion->error);
-}
-
-$totalCategorias = (int) $resultadoCategorias->fetch_assoc()["total"];
-
-
-// Total de ventas REALIZADAS
-
-$sqlVentas = "
-    SELECT COUNT(*) AS total
-    FROM ventas
-    WHERE estado = 'realizada'
-";
-
-$resultadoVentas = $conexion->query($sqlVentas);
-
-if (!$resultadoVentas) {
-    die("Error al obtener ventas: " . $conexion->error);
-}
-
-$totalVentas = (int) $resultadoVentas->fetch_assoc()["total"];
 
 
 // Productos con stock bajo
@@ -81,7 +47,7 @@ $sqlStockBajo = "
 $resultadoStockBajo = $conexion->query($sqlStockBajo);
 
 if (!$resultadoStockBajo) {
-    die("Error al obtener stock bajo: " . $conexion->error);
+    abortar_error_tecnico("Error al obtener stock bajo: " . $conexion->error);
 }
 
 $totalStockBajo = (int) $resultadoStockBajo->fetch_assoc()["total"];
@@ -103,7 +69,7 @@ $sqlVentasHoy = "
 $resultadoVentasHoy = $conexion->query($sqlVentasHoy);
 
 if (!$resultadoVentasHoy) {
-    die("Error al obtener ventas de hoy: " . $conexion->error);
+    abortar_error_tecnico("Error al obtener ventas de hoy: " . $conexion->error);
 }
 
 $ventasHoy = $resultadoVentasHoy->fetch_assoc();
@@ -133,7 +99,7 @@ $sqlUltimasVentas = "
 $resultadoUltimasVentas = $conexion->query($sqlUltimasVentas);
 
 if (!$resultadoUltimasVentas) {
-    die("Error al obtener últimas ventas: " . $conexion->error);
+    abortar_error_tecnico("Error al obtener últimas ventas: " . $conexion->error);
 }
 
 
@@ -161,13 +127,13 @@ while ($venta = $resultadoUltimasVentas->fetch_assoc()) {
     $stmtDetalle = $conexion->prepare($sqlDetalle);
 
     if (!$stmtDetalle) {
-        die("Error al preparar detalle de venta: " . $conexion->error);
+        abortar_error_tecnico("Error al preparar detalle de venta: " . $conexion->error);
     }
 
     $stmtDetalle->bind_param("i", $ventaId);
 
     if (!$stmtDetalle->execute()) {
-        die("Error al obtener detalle de venta: " . $stmtDetalle->error);
+        abortar_error_tecnico("Error al obtener detalle de venta: " . $stmtDetalle->error);
     }
 
     $resultadoDetalle = $stmtDetalle->get_result();
@@ -211,7 +177,7 @@ $sqlProductosStockBajo = "
 $resultadoProductosStockBajo = $conexion->query($sqlProductosStockBajo);
 
 if (!$resultadoProductosStockBajo) {
-    die("Error al obtener productos con stock bajo: " . $conexion->error);
+    abortar_error_tecnico("Error al obtener productos con stock bajo: " . $conexion->error);
 }
 
 
@@ -226,8 +192,7 @@ if (!$resultadoProductosStockBajo) {
 $sqlMes = "
     SELECT
         COUNT(*) AS cantidad,
-        COALESCE(SUM(total), 0) AS total,
-        COALESCE(AVG(total), 0) AS promedio
+        COALESCE(SUM(total), 0) AS total
     FROM ventas
     WHERE YEAR(fecha) = YEAR(CURDATE())
       AND MONTH(fecha) = MONTH(CURDATE())
@@ -237,14 +202,13 @@ $sqlMes = "
 $resultadoMes = $conexion->query($sqlMes);
 
 if (!$resultadoMes) {
-    die("Error al obtener resumen mensual: " . $conexion->error);
+    abortar_error_tecnico("Error al obtener resumen mensual: " . $conexion->error);
 }
 
 $resumenMes = $resultadoMes->fetch_assoc();
 
 $ventasMes = (int) $resumenMes["cantidad"];
 $totalMes = (float) $resumenMes["total"];
-$promedioMes = (float) $resumenMes["promedio"];
 
 
 // =====================================================
@@ -266,7 +230,7 @@ $sqlVentas7Dias = "
 $resultadoVentas7Dias = $conexion->query($sqlVentas7Dias);
 
 if (!$resultadoVentas7Dias) {
-    die("Error al obtener ventas de los últimos días: " . $conexion->error);
+    abortar_error_tecnico("Error al obtener ventas de los últimos días: " . $conexion->error);
 }
 
 
@@ -308,6 +272,16 @@ foreach ($ventasPorDia as $fecha => $total) {
     $datos7Dias[] = $total;
 }
 
+$hayVentasUltimos7Dias = false;
+
+foreach ($datos7Dias as $total) {
+
+    if ((float) $total !== 0.0) {
+        $hayVentasUltimos7Dias = true;
+        break;
+    }
+}
+
 
 // =====================================================
 // GRÁFICO: VENTAS POR CATEGORÍA DEL MES
@@ -334,7 +308,7 @@ $sqlVentasCategoria = "
 $resultadoVentasCategoria = $conexion->query($sqlVentasCategoria);
 
 if (!$resultadoVentasCategoria) {
-    die("Error al obtener ventas por categoría: " . $conexion->error);
+    abortar_error_tecnico("Error al obtener ventas por categoría: " . $conexion->error);
 }
 
 $labelsCategorias = [];
@@ -512,94 +486,6 @@ include "includes/navbar.php";
 
 
 
-        <!-- CATEGORÍAS -->
-
-        <div class="col-md-6 col-xl-3">
-
-            <div class="card stat-card h-100">
-
-                <div class="card-body">
-
-                    <div class="d-flex align-items-center">
-
-                        <div class="stat-icon icon-categorias">
-
-                            <i class="bi bi-tags"></i>
-
-                        </div>
-
-                        <div class="ms-3">
-
-                            <small class="text-muted">
-
-                                Categorías activas
-
-                            </small>
-
-                            <div class="number">
-
-                                <?php
-                                echo $totalCategorias;
-                                ?>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- VENTAS -->
-
-        <div class="col-md-6 col-xl-3">
-
-            <div class="card stat-card h-100">
-
-                <div class="card-body">
-
-                    <div class="d-flex align-items-center">
-
-                        <div class="stat-icon icon-ventas">
-
-                            <i class="bi bi-cart-check"></i>
-
-                        </div>
-
-                        <div class="ms-3">
-
-                            <small class="text-muted">
-
-                                Ventas realizadas
-
-                            </small>
-
-                            <div class="number">
-
-                                <?php
-                                echo $totalVentas;
-                                ?>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-
         <!-- STOCK BAJO -->
 
         <div class="col-md-6 col-xl-3">
@@ -643,78 +529,18 @@ include "includes/navbar.php";
         </div>
 
 
-    </div>
 
+        <!-- TOTAL VENDIDO HOY -->
 
+        <div class="col-md-6 col-xl-3">
 
-    <!-- =================================================
-         ESTADÍSTICAS DE HOY
-    ================================================== -->
-
-    <div class="row g-4 mb-4">
-
-
-        <!-- VENTAS HOY -->
-
-        <div class="col-md-6">
-
-            <div class="card dashboard-info-card h-100">
+            <div class="card stat-card h-100">
 
                 <div class="card-body">
 
                     <div class="d-flex align-items-center">
 
-                        <div class="dashboard-small-icon">
-
-                            <i class="bi bi-calendar-day"></i>
-
-                        </div>
-
-                        <div class="ms-3">
-
-                            <h6 class="mb-1">
-
-                                Ventas de hoy
-
-                            </h6>
-
-                            <h4 class="mb-0">
-
-                                <?php
-                                echo $cantidadVentasHoy;
-                                ?>
-
-                                <small class="text-muted fs-6">
-
-                                    ventas
-
-                                </small>
-
-                            </h4>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- MONTO HOY -->
-
-        <div class="col-md-6">
-
-            <div class="card dashboard-info-card h-100">
-
-                <div class="card-body">
-
-                    <div class="d-flex align-items-center">
-
-                        <div class="dashboard-small-icon">
+                        <div class="stat-icon icon-ventas">
 
                             <i class="bi bi-currency-dollar"></i>
 
@@ -722,13 +548,13 @@ include "includes/navbar.php";
 
                         <div class="ms-3">
 
-                            <h6 class="mb-1">
+                            <small class="text-muted">
 
                                 Total vendido hoy
 
-                            </h6>
+                            </small>
 
-                            <h4 class="mb-0">
+                            <div class="number">
 
                                 $
 
@@ -741,7 +567,70 @@ include "includes/navbar.php";
                                 );
                                 ?>
 
-                            </h4>
+                            </div>
+
+                            <small class="text-muted">
+
+                                <?php echo $cantidadVentasHoy; ?> ventas hoy
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- TOTAL VENDIDO EN EL MES -->
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card stat-card h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center">
+
+                        <div class="stat-icon icon-ventas">
+
+                            <i class="bi bi-calendar3"></i>
+
+                        </div>
+
+                        <div class="ms-3">
+
+                            <small class="text-muted">
+
+                                Total vendido en el mes
+
+                            </small>
+
+                            <div class="number">
+
+                                $
+
+                                <?php
+                                echo number_format(
+                                    $totalMes,
+                                    0,
+                                    ",",
+                                    "."
+                                );
+                                ?>
+
+                            </div>
+
+                            <small class="text-muted">
+
+                                <?php echo $ventasMes; ?> ventas este mes
+
+                            </small>
 
                         </div>
 
@@ -755,8 +644,6 @@ include "includes/navbar.php";
 
 
     </div>
-
-
 
     <!-- =================================================
          GRÁFICOS
@@ -792,10 +679,33 @@ include "includes/navbar.php";
                     </div>
 
 
-                    <canvas
-                        id="graficoVentas7Dias"
-                        height="220"
-                    ></canvas>
+                    <?php if ($hayVentasUltimos7Dias): ?>
+
+                        <div class="dashboard-chart-area">
+
+                            <canvas id="graficoVentas7Dias"></canvas>
+
+                        </div>
+
+                    <?php else: ?>
+
+                        <div class="dashboard-chart-empty">
+
+                            <div>
+
+                                <i class="bi bi-graph-up fs-1 text-muted"></i>
+
+                                <p class="text-muted mt-3 mb-0">
+
+                                    No hay ventas registradas en los últimos 7 días.
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    <?php endif; ?>
 
                 </div>
 
@@ -838,22 +748,27 @@ include "includes/navbar.php";
 
                     <?php if (count($labelsCategorias) > 0): ?>
 
-                        <canvas
-                            id="graficoCategorias"
-                            height="220"
-                        ></canvas>
+                        <div class="dashboard-chart-area">
+
+                            <canvas id="graficoCategorias"></canvas>
+
+                        </div>
 
                     <?php else: ?>
 
-                        <div class="text-center py-5">
+                        <div class="dashboard-chart-empty">
 
-                            <i class="bi bi-bar-chart fs-1 text-muted"></i>
+                            <div>
 
-                            <p class="text-muted mt-3 mb-0">
+                                <i class="bi bi-bar-chart fs-1 text-muted"></i>
 
-                                No hay ventas este mes.
+                                <p class="text-muted mt-3 mb-0">
 
-                            </p>
+                                    No hay ventas este mes.
+
+                                </p>
+
+                            </div>
 
                         </div>
 
@@ -893,7 +808,7 @@ include "includes/navbar.php";
 
                                 <i class="bi bi-receipt"></i>
 
-                                Últimas ventas
+                                Últimos movimientos de venta
 
                             </h5>
 
@@ -1219,129 +1134,6 @@ include "includes/navbar.php";
 
     </div>
 
-
-
-    <!-- =================================================
-         RESUMEN MENSUAL
-    ================================================== -->
-
-    <div class="card dashboard-table-card mb-4">
-
-        <div class="card-body">
-
-            <div class="mb-3">
-
-                <h5 class="mb-1">
-
-                    <i class="bi bi-calendar3"></i>
-
-                    Resumen de <?php echo $mesActual; ?>
-
-                </h5>
-
-                <small class="text-muted">
-
-                    Estadísticas del mes actual.
-
-                </small>
-
-            </div>
-
-
-            <div class="row g-3">
-
-
-                <div class="col-md-4">
-
-                    <div class="monthly-stat">
-
-                        <span class="text-muted">
-
-                            Ventas
-
-                        </span>
-
-                        <strong>
-
-                            <?php
-                            echo $ventasMes;
-                            ?>
-
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-md-4">
-
-                    <div class="monthly-stat">
-
-                        <span class="text-muted">
-
-                            Total vendido
-
-                        </span>
-
-                        <strong>
-
-                            $
-
-                            <?php
-                            echo number_format(
-                                $totalMes,
-                                0,
-                                ",",
-                                "."
-                            );
-                            ?>
-
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-md-4">
-
-                    <div class="monthly-stat">
-
-                        <span class="text-muted">
-
-                            Promedio por venta
-
-                        </span>
-
-                        <strong>
-
-                            $
-
-                            <?php
-                            echo number_format(
-                                $promedioMes,
-                                0,
-                                ",",
-                                "."
-                            );
-                            ?>
-
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
 </div>
 
 
@@ -1407,7 +1199,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 responsive: true,
 
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
 
                 plugins: {
 
@@ -1492,6 +1284,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     echo json_encode(
                         $labelsCategorias,
                         JSON_UNESCAPED_UNICODE
+                        | JSON_HEX_TAG
+                        | JSON_HEX_AMP
+                        | JSON_HEX_APOS
+                        | JSON_HEX_QUOT
                     );
                 ?>,
 
@@ -1517,7 +1313,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 responsive: true,
 
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
 
                 plugins: {
 

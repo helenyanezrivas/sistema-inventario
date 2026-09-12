@@ -1,6 +1,8 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
 require_once "../../includes/security.php";
@@ -9,10 +11,7 @@ require_once "../../includes/security.php";
 // VERIFICAR SESIÓN
 // =====================================================
 
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: ../../login.php");
-    exit;
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 // =====================================================
 // SOLO PERMITIR POST
@@ -68,8 +67,9 @@ try {
 
     if (!$stmtVenta) {
         throw new Exception(
-            "Error al preparar la venta: "
-            . $conexion->error
+            mensaje_error_tecnico(
+                "Error al preparar la venta: " . $conexion->error
+            )
         );
     }
 
@@ -77,8 +77,9 @@ try {
 
     if (!$stmtVenta->execute()) {
         throw new Exception(
-            "Error al consultar la venta: "
-            . $stmtVenta->error
+            mensaje_error_tecnico(
+                "Error al consultar la venta: " . $stmtVenta->error
+            )
         );
     }
 
@@ -119,8 +120,9 @@ try {
 
     if (!$stmtDetalle) {
         throw new Exception(
-            "Error al preparar el detalle: "
-            . $conexion->error
+            mensaje_error_tecnico(
+                "Error al preparar el detalle: " . $conexion->error
+            )
         );
     }
 
@@ -128,8 +130,9 @@ try {
 
     if (!$stmtDetalle->execute()) {
         throw new Exception(
-            "Error al obtener el detalle: "
-            . $stmtDetalle->error
+            mensaje_error_tecnico(
+                "Error al obtener el detalle: " . $stmtDetalle->error
+            )
         );
     }
 
@@ -154,8 +157,9 @@ try {
 
         if (!$stmtStock) {
             throw new Exception(
-                "Error al preparar la actualización del stock: "
-                . $conexion->error
+                mensaje_error_tecnico(
+                    "Error al preparar la actualización del stock: " . $conexion->error
+                )
             );
         }
 
@@ -167,8 +171,9 @@ try {
 
         if (!$stmtStock->execute()) {
             throw new Exception(
-                "Error al restaurar el stock: "
-                . $stmtStock->error
+                mensaje_error_tecnico(
+                    "Error al restaurar el stock: " . $stmtStock->error
+                )
             );
         }
 
@@ -191,8 +196,9 @@ try {
 
     if (!$stmtAnular) {
         throw new Exception(
-            "Error al preparar la anulación: "
-            . $conexion->error
+            mensaje_error_tecnico(
+                "Error al preparar la anulación: " . $conexion->error
+            )
         );
     }
 
@@ -200,8 +206,9 @@ try {
 
     if (!$stmtAnular->execute()) {
         throw new Exception(
-            "Error al anular la venta: "
-            . $stmtAnular->error
+            mensaje_error_tecnico(
+                "Error al anular la venta: " . $stmtAnular->error
+            )
         );
     }
 
@@ -227,6 +234,8 @@ try {
     // =================================================
 
     $conexion->rollback();
+
+    $mensajeError = mensaje_error_tecnico($e->getMessage());
 
     ?>
     <!DOCTYPE html>
@@ -276,7 +285,7 @@ try {
                         <p class="text-muted">
                             <?php
                             echo htmlspecialchars(
-                                $e->getMessage(),
+                                $mensajeError,
                                 ENT_QUOTES,
                                 "UTF-8"
                             );

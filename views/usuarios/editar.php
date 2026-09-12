@@ -1,6 +1,8 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
 require_once "../../includes/security.php";
@@ -9,10 +11,7 @@ require_once "../../includes/security.php";
 // VERIFICAR SESIÓN
 // =====================================================
 
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: ../../login.php");
-    exit;
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 // =====================================================
 // VERIFICAR ROL DE ADMINISTRADOR
@@ -145,10 +144,7 @@ $stmtUsuario = $conexion->prepare($sqlUsuario);
 
 if (!$stmtUsuario) {
 
-    die(
-        "Error al preparar la consulta: "
-        . $conexion->error
-    );
+    abortar_error_tecnico("Error al preparar la consulta: " . $conexion->error);
 }
 
 $stmtUsuario->bind_param(
@@ -375,9 +371,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if (!$stmtAdmins) {
 
-            $errores[] =
-                "Error al comprobar los administradores: "
-                . $conexion->error;
+            $errores[] = mensaje_error_tecnico(
+                "Error al comprobar los administradores: " . $conexion->error
+            );
 
         } else {
 
@@ -427,9 +423,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if (!$stmtExiste) {
 
-            $errores[] =
-                "Error al comprobar el nombre de usuario: "
-                . $conexion->error;
+            $errores[] = mensaje_error_tecnico(
+                "Error al comprobar el nombre de usuario: " . $conexion->error
+            );
 
         } else {
 
@@ -478,9 +474,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if (!$stmtExisteEmail) {
 
-            $errores[] =
-                "Error al comprobar el correo electrónico: "
-                . $conexion->error;
+            $errores[] = mensaje_error_tecnico(
+                "Error al comprobar el correo electrónico: " . $conexion->error
+            );
 
         } else {
 
@@ -545,14 +541,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             if (!$stmtActualizar) {
 
-                $errores[] =
-                    "Error al preparar la actualización: "
-                    . $conexion->error;
+                $errores[] = mensaje_error_tecnico(
+                    "Error al preparar la actualización: " . $conexion->error
+                );
 
             } else {
 
                 $stmtActualizar->bind_param(
-                    "ssssii",
+                    "sssssii",
                     $nombre,
                     $usuario,
                     $email,
@@ -566,9 +562,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     !$stmtActualizar->execute()
                 ) {
 
-                    $errores[] =
-                        "Error al actualizar el usuario: "
-                        . $stmtActualizar->error;
+                    $errores[] = mensaje_error_tecnico(
+                        "Error al actualizar el usuario: " . $stmtActualizar->error
+                    );
 
                 }
 
@@ -600,9 +596,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             if (!$stmtActualizar) {
 
-                $errores[] =
-                    "Error al preparar la actualización: "
-                    . $conexion->error;
+                $errores[] = mensaje_error_tecnico(
+                    "Error al preparar la actualización: " . $conexion->error
+                );
 
             } else {
 
@@ -620,9 +616,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     !$stmtActualizar->execute()
                 ) {
 
-                    $errores[] =
-                        "Error al actualizar el usuario: "
-                        . $stmtActualizar->error;
+                    $errores[] = mensaje_error_tecnico(
+                        "Error al actualizar el usuario: " . $stmtActualizar->error
+                    );
 
                 }
 

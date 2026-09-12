@@ -1,14 +1,14 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
+require_once "../../includes/security.php";
 
 // Verificar sesión
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: ../../login.php");
-    exit;
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 // Verificar ID de venta
 if (!isset($_GET["id"]) || !is_numeric($_GET["id"])) {
@@ -37,7 +37,7 @@ $sql_venta = "SELECT
 $stmt_venta = $conexion->prepare($sql_venta);
 
 if (!$stmt_venta) {
-    die("Error al preparar la consulta: " . $conexion->error);
+    abortar_error_tecnico("Error al preparar la consulta: " . $conexion->error);
 }
 
 $stmt_venta->bind_param("i", $venta_id);
@@ -78,7 +78,7 @@ $sql_detalle = "SELECT
 $stmt_detalle = $conexion->prepare($sql_detalle);
 
 if (!$stmt_detalle) {
-    die("Error al preparar el detalle: " . $conexion->error);
+    abortar_error_tecnico("Error al preparar el detalle: " . $conexion->error);
 }
 
 $stmt_detalle->bind_param("i", $venta_id);
@@ -134,58 +134,7 @@ $resultado_detalle = $stmt_detalle->get_result();
 
 <body>
 
-
-<!-- =====================================================
-     NAVBAR
-===================================================== -->
-
-<nav class="navbar navbar-dark">
-
-    <div class="container-fluid px-4">
-
-        <a
-            href="../../index.php"
-            class="navbar-brand fw-bold"
-        >
-
-            <i class="bi bi-box-seam"></i>
-
-            Sistema de Inventario
-
-        </a>
-
-
-        <div class="d-flex align-items-center gap-3">
-
-            <span class="text-white">
-
-                <i class="bi bi-person-circle"></i>
-
-                <?php
-                echo htmlspecialchars(
-                    $_SESSION["nombre"]
-                );
-                ?>
-
-            </span>
-
-
-            <a
-                href="../../logout.php"
-                class="btn btn-light btn-sm"
-            >
-
-                <i class="bi bi-box-arrow-right"></i>
-
-                Cerrar sesión
-
-            </a>
-
-        </div>
-
-    </div>
-
-</nav>
+<?php include "../../includes/navbar.php"; ?>
 
 
 <!-- =====================================================

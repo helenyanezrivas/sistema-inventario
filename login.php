@@ -1,6 +1,8 @@
 <?php
 
-session_start();
+require_once "includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "config/database.php";
 require_once "includes/security.php";
@@ -48,25 +50,7 @@ if (
 
 $maxIntentosLogin = 5;
 $segundosBloqueoLogin = 60;
-
-$intentosLogin =
-    (int) ($_SESSION["login_intentos"] ?? 0);
-
-$bloqueadoHasta =
-    (int) ($_SESSION["login_bloqueado_hasta"] ?? 0);
-
-$loginBloqueado =
-    $bloqueadoHasta > time();
-
-if (
-    !$loginBloqueado
-    && $bloqueadoHasta > 0
-) {
-
-    unset($_SESSION["login_bloqueado_hasta"]);
-
-    $bloqueadoHasta = 0;
-}
+$loginBloqueado = false;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,241 +70,257 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     verificar_csrf();
 
-    /*
-    |--------------------------------------------------------------------------
-    | COMPROBAR BLOQUEO
-    |--------------------------------------------------------------------------
-    */
+    $email =
+        trim($_POST["email"] ?? "");
 
-    if ($loginBloqueado) {
+    $password =
+        $_POST["password"] ?? "";
 
-        $segundosRestantes =
-            max(
-                1,
-                $bloqueadoHasta - time()
-            );
+    if (
+        empty($email)
+        || empty($password)
+    ) {
 
         $mensaje =
-            "Demasiados intentos fallidos. "
-            . "Espera "
-            . $segundosRestantes
-            . " segundos e inténtalo nuevamente.";
+            "Debes ingresar correo electrónico y contraseña.";
+
+    } elseif (
+        !filter_var(
+            $email,
+            FILTER_VALIDATE_EMAIL
+        )
+    ) {
+
+        $mensaje =
+            "Debes ingresar un correo electrónico válido.";
 
     } else {
 
-        $email =
-            trim($_POST["email"] ?? "");
+        $sql = "
+            SELECT
+                id,
+                nombre,
+                usuario,
+                email,
+                password,
+                rol,
+                login_intentos_fallidos,
+                login_bloqueado_hasta
+            FROM usuarios
+            WHERE email = ?
+              AND estado = 1
+            LIMIT 1
+        ";
 
-        $password =
-            $_POST["password"] ?? "";
+        $stmt =
+            $conexion->prepare($sql);
 
-        if (
-            empty($email)
-            || empty($password)
-        ) {
+        if ($stmt) {
 
-            $mensaje =
-                "Debes ingresar correo electrónico y contraseña.";
+            $stmt->bind_param(
+                "s",
+                $email
+            );
 
-        } elseif (
-            !filter_var(
-                $email,
-                FILTER_VALIDATE_EMAIL
-            )
-        ) {
+            if ($stmt->execute()) {
 
-            $mensaje =
-                "Debes ingresar un correo electrónico válido.";
+                $resultado =
+                    $stmt->get_result();
 
-        } else {
+                if (
+                    $resultado->num_rows === 1
+                ) {
 
-            /*
-            |--------------------------------------------------------------------------
-            | BUSCAR USUARIO POR CORREO
-            |--------------------------------------------------------------------------
-            */
+                    $usuarioDB =
+                        $resultado->fetch_assoc();
 
-            $sql = "
-                SELECT
-                    id,
-                    nombre,
-                    usuario,
-                    email,
-                    password,
-                    rol
-                FROM usuarios
-                WHERE email = ?
-                  AND estado = 1
-                LIMIT 1
-            ";
-
-            $stmt =
-                $conexion->prepare($sql);
-
-            if ($stmt) {
-
-                $stmt->bind_param(
-                    "s",
-                    $email
-                );
-
-                if ($stmt->execute()) {
-
-                    $resultado =
-                        $stmt->get_result();
+                    $bloqueadoHasta =
+                        strtotime(
+                            $usuarioDB["login_bloqueado_hasta"]
+                            ?? ""
+                        );
 
                     if (
-                        $resultado->num_rows === 1
+                        $bloqueadoHasta !== false
+                        && $bloqueadoHasta > time()
                     ) {
 
-                        $usuarioDB =
-                            $resultado->fetch_assoc();
+                        $loginBloqueado = true;
 
-                        /*
-                        |--------------------------------------------------------------------------
-                        | VERIFICAR CONTRASEÑA
-                        |--------------------------------------------------------------------------
-                        */
-
-                        if (
-                            password_verify(
-                                $password,
-                                $usuarioDB["password"]
-                            )
-                        ) {
-
-                            /*
-                            |--------------------------------------------------------------------------
-                            | LOGIN CORRECTO
-                            |--------------------------------------------------------------------------
-                            */
-
-                            session_regenerate_id(true);
-
-                            $_SESSION["usuario_id"] =
-                                $usuarioDB["id"];
-
-                            $_SESSION["nombre"] =
-                                $usuarioDB["nombre"];
-
-                            $_SESSION["usuario"] =
-                                $usuarioDB["usuario"];
-
-                            $_SESSION["email"] =
-                                $usuarioDB["email"];
-
-                            $_SESSION["rol"] =
-                                $usuarioDB["rol"];
-
-                            /*
-                            |--------------------------------------------------------------------------
-                            | REINICIAR INTENTOS
-                            |--------------------------------------------------------------------------
-                            */
-
-                            unset(
-                                $_SESSION["login_intentos"],
-                                $_SESSION["login_bloqueado_hasta"]
+                        $segundosRestantes =
+                            max(
+                                1,
+                                $bloqueadoHasta - time()
                             );
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | REGENERAR TOKEN CSRF
-                            |--------------------------------------------------------------------------
-                            */
+                        $mensaje =
+                            "Demasiados intentos fallidos. "
+                            . "Espera "
+                            . $segundosRestantes
+                            . " segundos e inténtalo nuevamente.";
 
-                            $_SESSION["csrf_token"] =
-                                bin2hex(
-                                    random_bytes(32)
+                    } elseif (
+                        password_verify(
+                            $password,
+                            $usuarioDB["password"]
+                        )
+                    ) {
+
+                        $sqlReiniciarIntentos = "
+                            UPDATE usuarios
+                            SET
+                                login_intentos_fallidos = 0,
+                                login_bloqueado_hasta = NULL
+                            WHERE id = ?
+                        ";
+
+                        $stmtReiniciarIntentos =
+                            $conexion->prepare(
+                                $sqlReiniciarIntentos
+                            );
+
+                        if ($stmtReiniciarIntentos) {
+
+                            $stmtReiniciarIntentos->bind_param(
+                                "i",
+                                $usuarioDB["id"]
+                            );
+
+                            if ($stmtReiniciarIntentos->execute()) {
+
+                                session_regenerate_id(true);
+
+                                $_SESSION["usuario_id"] =
+                                    $usuarioDB["id"];
+
+                                $_SESSION["nombre"] =
+                                    $usuarioDB["nombre"];
+
+                                $_SESSION["usuario"] =
+                                    $usuarioDB["usuario"];
+
+                                $_SESSION["email"] =
+                                    $usuarioDB["email"];
+
+                                $_SESSION["rol"] =
+                                    $usuarioDB["rol"];
+
+                                $_SESSION["csrf_token"] =
+                                    bin2hex(
+                                        random_bytes(32)
+                                    );
+
+                                header(
+                                    "Location: index.php"
                                 );
 
-                            header(
-                                "Location: index.php"
-                            );
-
-                            exit;
-
-                        } else {
-
-                            $intentosLogin++;
-
-                            $_SESSION["login_intentos"] =
-                                $intentosLogin;
-
-                            if (
-                                $intentosLogin >=
-                                $maxIntentosLogin
-                            ) {
-
-                                $bloqueadoHasta =
-                                    time()
-                                    + $segundosBloqueoLogin;
-
-                                $_SESSION["login_bloqueado_hasta"] =
-                                    $bloqueadoHasta;
-
-                                $loginBloqueado = true;
-
-                                $mensaje =
-                                    "Demasiados intentos fallidos. "
-                                    . "Espera "
-                                    . $segundosBloqueoLogin
-                                    . " segundos e inténtalo nuevamente.";
+                                exit;
 
                             } else {
 
                                 $mensaje =
-                                    "Correo o contraseña incorrectos.";
+                                    "Ocurrió un error al iniciar sesión.";
                             }
-                        }
 
-                    } else {
-
-                        $intentosLogin++;
-
-                        $_SESSION["login_intentos"] =
-                            $intentosLogin;
-
-                        if (
-                            $intentosLogin >=
-                            $maxIntentosLogin
-                        ) {
-
-                            $bloqueadoHasta =
-                                time()
-                                + $segundosBloqueoLogin;
-
-                            $_SESSION["login_bloqueado_hasta"] =
-                                $bloqueadoHasta;
-
-                            $loginBloqueado = true;
-
-                            $mensaje =
-                                "Demasiados intentos fallidos. "
-                                . "Espera "
-                                . $segundosBloqueoLogin
-                                . " segundos e inténtalo nuevamente.";
+                            $stmtReiniciarIntentos->close();
 
                         } else {
 
                             $mensaje =
-                                "Correo o contraseña incorrectos.";
+                                "Ocurrió un error al iniciar sesión.";
+                        }
+
+                    } else {
+
+                        $sqlActualizarIntentos = "
+                            UPDATE usuarios
+                            SET
+                                login_intentos_fallidos =
+                                    login_intentos_fallidos + 1,
+                                login_bloqueado_hasta = CASE
+                                    WHEN login_intentos_fallidos + 1 >= ?
+                                        THEN DATE_ADD(
+                                            NOW(),
+                                            INTERVAL ? SECOND
+                                        )
+                                    ELSE NULL
+                                END
+                            WHERE id = ?
+                        ";
+
+                        $stmtActualizarIntentos =
+                            $conexion->prepare(
+                                $sqlActualizarIntentos
+                            );
+
+                        if ($stmtActualizarIntentos) {
+
+                            $stmtActualizarIntentos->bind_param(
+                                "iii",
+                                $maxIntentosLogin,
+                                $segundosBloqueoLogin,
+                                $usuarioDB["id"]
+                            );
+
+                            if ($stmtActualizarIntentos->execute()) {
+
+                                $intentosLogin =
+                                    (int) $usuarioDB[
+                                        "login_intentos_fallidos"
+                                    ] + 1;
+
+                                if (
+                                    $intentosLogin >=
+                                    $maxIntentosLogin
+                                ) {
+
+                                    $loginBloqueado = true;
+
+                                    $mensaje =
+                                        "Demasiados intentos fallidos. "
+                                        . "Espera "
+                                        . $segundosBloqueoLogin
+                                        . " segundos e inténtalo nuevamente.";
+
+                                } else {
+
+                                    $mensaje =
+                                        "Correo o contraseña incorrectos.";
+                                }
+
+                            } else {
+
+                                $mensaje =
+                                    "Ocurrió un error al iniciar sesión.";
+                            }
+
+                            $stmtActualizarIntentos->close();
+
+                        } else {
+
+                            $mensaje =
+                                "Ocurrió un error al iniciar sesión.";
                         }
                     }
 
                 } else {
 
                     $mensaje =
-                        "Ocurrió un error al iniciar sesión.";
+                        "Correo o contraseña incorrectos.";
                 }
-
-                $stmt->close();
 
             } else {
 
                 $mensaje =
                     "Ocurrió un error al iniciar sesión.";
             }
+
+            $stmt->close();
+
+        } else {
+
+            $mensaje =
+                "Ocurrió un error al iniciar sesión.";
         }
     }
 }

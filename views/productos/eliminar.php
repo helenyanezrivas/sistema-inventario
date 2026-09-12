@@ -1,15 +1,14 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
 require_once "../../includes/security.php";
 
 // Verificar sesión
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: ../../login.php");
-    exit;
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 csrf_token();
 
@@ -60,10 +59,7 @@ $sqlProducto = "
 $stmtProducto = $conexion->prepare($sqlProducto);
 
 if (!$stmtProducto) {
-    die(
-        "Error al preparar la consulta: "
-        . $conexion->error
-    );
+    abortar_error_tecnico("Error al preparar la consulta: " . $conexion->error);
 }
 
 $stmtProducto->bind_param("i", $id);
@@ -99,10 +95,7 @@ $sqlVentas = "
 $stmtVentas = $conexion->prepare($sqlVentas);
 
 if (!$stmtVentas) {
-    die(
-        "Error al preparar la consulta: "
-        . $conexion->error
-    );
+    abortar_error_tecnico("Error al preparar la consulta: " . $conexion->error);
 }
 
 $stmtVentas->bind_param("i", $id);
@@ -407,10 +400,7 @@ $sqlEliminar = "
 $stmtEliminar = $conexion->prepare($sqlEliminar);
 
 if (!$stmtEliminar) {
-    die(
-        "Error al preparar la eliminación: "
-        . $conexion->error
-    );
+    abortar_error_tecnico("Error al preparar la eliminación: " . $conexion->error);
 }
 
 $stmtEliminar->bind_param("i", $id);
@@ -425,13 +415,12 @@ if ($stmtEliminar->execute()) {
 
 } else {
 
-    $error = $stmtEliminar->error;
+    $errorTecnico = $stmtEliminar->error;
 
     $stmtEliminar->close();
 
-    die(
-        "Error al eliminar el producto: "
-        . $error
+    abortar_error_tecnico(
+        "Error al eliminar el producto: " . $errorTecnico
     );
 }
 

@@ -1,15 +1,14 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
 require_once "../../includes/security.php";
 
 // Verificar sesión
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: ../../login.php");
-    exit;
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 csrf_token();
 
@@ -32,7 +31,7 @@ $sql_productos = "SELECT
 $resultado_productos = $conexion->query($sql_productos);
 
 if (!$resultado_productos) {
-    die("Error al obtener los productos: " . $conexion->error);
+    abortar_error_tecnico("Error al obtener los productos: " . $conexion->error);
 }
 
 
@@ -104,7 +103,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 if (!$stmt_producto) {
 
                     throw new Exception(
-                        "Error al preparar la consulta del producto."
+                        mensaje_error_tecnico(
+                            "Error al preparar la consulta del producto."
+                        )
                     );
                 }
 
@@ -196,7 +197,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if (!$stmt_venta) {
 
                 throw new Exception(
-                    "Error al preparar el registro de la venta."
+                    mensaje_error_tecnico(
+                        "Error al preparar el registro de la venta."
+                    )
                 );
             }
 
@@ -211,8 +214,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if (!$stmt_venta->execute()) {
 
                 throw new Exception(
-                    "Error al registrar la venta: "
-                    . $stmt_venta->error
+                    mensaje_error_tecnico(
+                        "Error al registrar la venta: " . $stmt_venta->error
+                    )
                 );
             }
 
@@ -252,7 +256,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 if (!$stmt_detalle) {
 
                     throw new Exception(
-                        "Error al preparar el detalle de la venta."
+                        mensaje_error_tecnico(
+                            "Error al preparar el detalle de la venta."
+                        )
                     );
                 }
 
@@ -270,8 +276,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 if (!$stmt_detalle->execute()) {
 
                     throw new Exception(
-                        "Error al registrar el detalle: "
-                        . $stmt_detalle->error
+                        mensaje_error_tecnico(
+                            "Error al registrar el detalle: " . $stmt_detalle->error
+                        )
                     );
                 }
 
@@ -298,7 +305,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 if (!$stmt_stock) {
 
                     throw new Exception(
-                        "Error al preparar la actualización del stock."
+                        mensaje_error_tecnico(
+                            "Error al preparar la actualización del stock."
+                        )
                     );
                 }
 
@@ -313,8 +322,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 if (!$stmt_stock->execute()) {
 
                     throw new Exception(
-                        "Error al actualizar el stock: "
-                        . $stmt_stock->error
+                        mensaje_error_tecnico(
+                            "Error al actualizar el stock: " . $stmt_stock->error
+                        )
                     );
                 }
 
@@ -343,7 +353,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             // Deshacer todos los cambios
             $conexion->rollback();
 
-            $error = $e->getMessage();
+            $error = mensaje_error_tecnico($e->getMessage());
         }
     }
 }
@@ -394,58 +404,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <body>
 
-
-<!-- =====================================================
-     NAVBAR
-===================================================== -->
-
-<nav class="navbar navbar-dark">
-
-    <div class="container-fluid px-4">
-
-        <a
-            href="../../index.php"
-            class="navbar-brand fw-bold"
-        >
-
-            <i class="bi bi-box-seam"></i>
-
-            Sistema de Inventario
-
-        </a>
-
-
-        <div class="d-flex align-items-center gap-3">
-
-            <span class="text-white">
-
-                <i class="bi bi-person-circle"></i>
-
-                <?php
-                echo htmlspecialchars(
-                    $_SESSION["nombre"]
-                );
-                ?>
-
-            </span>
-
-
-            <a
-                href="../../logout.php"
-                class="btn btn-light btn-sm"
-            >
-
-                <i class="bi bi-box-arrow-right"></i>
-
-                Cerrar sesión
-
-            </a>
-
-        </div>
-
-    </div>
-
-</nav>
+<?php include "../../includes/navbar.php"; ?>
 
 
 <!-- =====================================================

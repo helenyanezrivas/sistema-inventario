@@ -25,11 +25,44 @@ CREATE TABLE IF NOT EXISTS usuarios (
     rol ENUM('admin', 'vendedor') NOT NULL DEFAULT 'vendedor',
     estado TINYINT(1) NOT NULL DEFAULT 1,
 
+    login_intentos_fallidos TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    login_bloqueado_hasta DATETIME DEFAULT NULL,
+
     token_recuperacion CHAR(64) DEFAULT NULL,
     token_recuperacion_expira DATETIME DEFAULT NULL,
 
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
+
+-- ============================================================
+-- USUARIO ADMINISTRADOR DE DEMOSTRACIÓN
+-- Contraseña: AdminDemo123!
+-- Credenciales públicas para instalación local de demostración.
+-- ============================================================
+
+INSERT INTO usuarios (
+    nombre,
+    usuario,
+    email,
+    password,
+    rol,
+    estado,
+    login_intentos_fallidos,
+    login_bloqueado_hasta,
+    token_recuperacion,
+    token_recuperacion_expira
+) VALUES (
+    'Administrador Demo',
+    'admin_demo',
+    'admin@demo.local',
+    '$2y$10$phBP8Atd4/eWXb6m9z6DYeXmakq.0KVwZw7mtN2uuI4SKEh7wcbsO',
+    'admin',
+    1,
+    0,
+    NULL,
+    NULL,
+    NULL
+);
 
 -- ============================================================
 -- TABLA: categorias

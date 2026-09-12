@@ -1,5 +1,17 @@
 {
+    "name": "helenyanezrivas/sistema-inventario-php",
+    "description": "Sistema de inventario en PHP y MySQL para portafolio, con roles, ventas, exportaciones y recuperación de contraseña.",
+    "type": "project",
+    "license": "MIT",
     "require": {
+        "php": "^8.2",
+        "ext-mysqli": "*",
+        "ext-mbstring": "*",
+        "ext-dom": "*",
+        "ext-gd": "*",
+        "ext-zip": "*",
+        "ext-xml": "*",
+        "ext-openssl": "*",
         "phpoffice/phpspreadsheet": "^5.9",
         "dompdf/dompdf": "^3.1",
         "phpmailer/phpmailer": "^7.1"

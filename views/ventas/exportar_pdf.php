@@ -1,8 +1,11 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
+require_once "../../includes/security.php";
 require_once "../../vendor/autoload.php";
 
 use Dompdf\Dompdf;
@@ -13,13 +16,7 @@ use Dompdf\Options;
 // VERIFICAR SESIÓN
 // =====================================================
 
-if (!isset($_SESSION["usuario_id"])) {
-
-    header("Location: ../../login.php");
-
-    exit;
-
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 
 // =====================================================
@@ -168,10 +165,7 @@ $stmt =
 
 if (!$stmt) {
 
-    die(
-        "Error al preparar la consulta: "
-        . $conexion->error
-    );
+    abortar_error_tecnico("Error al preparar la consulta: " . $conexion->error);
 
 }
 
@@ -196,10 +190,7 @@ if (!empty($parametros)) {
 
 if (!$stmt->execute()) {
 
-    die(
-        "Error al obtener las ventas: "
-        . $stmt->error
-    );
+    abortar_error_tecnico("Error al obtener las ventas: " . $stmt->error);
 
 }
 
@@ -447,9 +438,8 @@ if ($resultado->num_rows > 0) {
 
         if (!$stmtDetalle) {
 
-            die(
-                "Error al preparar detalle: "
-                . $conexion->error
+            abortar_error_tecnico(
+                "Error al preparar detalle: " . $conexion->error
             );
 
         }
@@ -463,9 +453,8 @@ if ($resultado->num_rows > 0) {
 
         if (!$stmtDetalle->execute()) {
 
-            die(
-                "Error al obtener detalle: "
-                . $stmtDetalle->error
+            abortar_error_tecnico(
+                "Error al obtener detalle: " . $stmtDetalle->error
             );
 
         }

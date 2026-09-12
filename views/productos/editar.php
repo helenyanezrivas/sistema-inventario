@@ -1,15 +1,14 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
 require_once "../../includes/security.php";
 
 // Verificar sesión
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: ../../login.php");
-    exit;
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 csrf_token();
 
@@ -284,60 +283,7 @@ $resultadoCategorias = $conexion->query($sqlCategorias);
 
 <body>
 
-
-<!-- =====================================================
-     NAVBAR
-===================================================== -->
-
-<nav class="navbar navbar-dark">
-
-    <div class="container-fluid px-4">
-
-        <a
-            href="../../index.php"
-            class="navbar-brand fw-bold"
-        >
-
-            <i class="bi bi-box-seam"></i>
-
-            Sistema de Inventario
-
-        </a>
-
-
-        <div class="d-flex align-items-center gap-3">
-
-            <span class="text-white">
-
-                <i class="bi bi-person-circle"></i>
-
-                <?php
-                echo htmlspecialchars(
-                    $_SESSION["nombre"] ?? "Usuario",
-                    ENT_QUOTES,
-                    "UTF-8"
-                );
-                ?>
-
-            </span>
-
-
-            <a
-                href="../../logout.php"
-                class="btn btn-light btn-sm"
-            >
-
-                <i class="bi bi-box-arrow-right"></i>
-
-                Cerrar sesión
-
-            </a>
-
-        </div>
-
-    </div>
-
-</nav>
+<?php include "../../includes/navbar.php"; ?>
 
 
 <!-- =====================================================

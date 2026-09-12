@@ -1,8 +1,11 @@
 <?php
 
-session_start();
+require_once "../../includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "../../config/database.php";
+require_once "../../includes/security.php";
 require_once "../../vendor/autoload.php";
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -12,17 +15,28 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 
+function proteger_formula_excel($valor)
+{
+    if (
+        !is_string($valor)
+        || $valor === ""
+    ) {
+        return $valor;
+    }
+
+    if (in_array($valor[0], ["=", "+", "-", "@"], true)) {
+        return "'" . $valor;
+    }
+
+    return $valor;
+}
+
+
 // =====================================================
 // VERIFICAR SESIÓN
 // =====================================================
 
-if (!isset($_SESSION["usuario_id"])) {
-
-    header("Location: ../../login.php");
-
-    exit;
-
-}
+validar_sesion_activa($conexion, "../../login.php");
 
 
 // =====================================================
@@ -168,10 +182,7 @@ $stmt = $conexion->prepare($sql);
 
 if (!$stmt) {
 
-    die(
-        "Error al preparar la consulta: "
-        . $conexion->error
-    );
+    abortar_error_tecnico("Error al preparar la consulta: " . $conexion->error);
 
 }
 
@@ -196,10 +207,7 @@ if (!empty($parametros)) {
 
 if (!$stmt->execute()) {
 
-    die(
-        "Error al obtener las ventas: "
-        . $stmt->error
-    );
+    abortar_error_tecnico("Error al obtener las ventas: " . $stmt->error);
 
 }
 
@@ -442,9 +450,8 @@ while (
 
     if (!$stmtDetalle) {
 
-        die(
-            "Error al preparar detalle: "
-            . $conexion->error
+        abortar_error_tecnico(
+            "Error al preparar detalle: " . $conexion->error
         );
 
     }
@@ -458,9 +465,8 @@ while (
 
     if (!$stmtDetalle->execute()) {
 
-        die(
-            "Error al obtener detalle: "
-            . $stmtDetalle->error
+        abortar_error_tecnico(
+            "Error al obtener detalle: " . $stmtDetalle->error
         );
 
     }
@@ -512,15 +518,17 @@ while (
 
     $hoja->setCellValue(
         "C" . $fila,
-        $venta["usuario"]
+        proteger_formula_excel($venta["usuario"])
     );
 
 
     $hoja->setCellValue(
         "D" . $fila,
-        implode(
-            ", ",
-            $productosVenta
+        proteger_formula_excel(
+            implode(
+                ", ",
+                $productosVenta
+            )
         )
     );
 

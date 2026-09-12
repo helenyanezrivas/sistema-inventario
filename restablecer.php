@@ -1,6 +1,8 @@
 <?php
 
-session_start();
+require_once "includes/session.php";
+
+iniciar_sesion_segura();
 
 require_once "config/database.php";
 require_once "includes/security.php";
