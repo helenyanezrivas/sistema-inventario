@@ -160,11 +160,6 @@ Estas credenciales son públicas y solo están destinadas a una demostración lo
 - Control de acceso basado en roles y validación centralizada de sesiones activas.
 
 
-
-## Alcance
-
-Este es un proyecto de portafolio orientado a ejecución local con XAMPP. No pretende ser un SaaS empresarial desplegado ni incluye API REST, arquitectura MVC o pruebas automatizadas.
-
 ## Autor
 
 **Helen Yáñez Rivas**
