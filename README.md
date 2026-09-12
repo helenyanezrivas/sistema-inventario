@@ -152,7 +152,11 @@ http://localhost/inventario/
 
 Estas credenciales son ficticias, públicas y están destinadas exclusivamente a una demostración local. El archivo `inventario.sql` no contiene usuarios reales, productos ni ventas reales; incluye únicamente esta cuenta administradora demo. Desde ella puedes crear usuarios vendedores o administradores.
 
-## Alcance del proyecto\n\nEste repositorio corresponde a un proyecto de portafolio preparado para ejecutarse localmente con XAMPP. No pretende presentarse como una aplicación SaaS ni como una arquitectura empresarial desplegada en producción.\n\n## Decisiones técnicas
+## Sobre el proyecto
+
+Este sistema fue desarrollado como proyecto de portafolio para aplicar conocimientos de desarrollo web, bases de datos, seguridad, gestión de inventario y generación de reportes.
+
+## Decisiones técnicas
 
 - PHP procedural organizado por módulos y vistas.
 - MySQL con tablas InnoDB, claves foráneas y restricciones de integridad.
