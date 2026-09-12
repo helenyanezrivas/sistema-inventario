@@ -3,7 +3,9 @@
 -- Sistema de Inventario - PHP + MySQL
 --
 -- Este archivo contiene la estructura de la base de datos.
--- No incluye datos actuales de usuarios, productos o ventas.
+-- No incluye datos reales de usuarios, productos o ventas.
+-- Incluye únicamente una cuenta administradora demo
+-- para pruebas locales del sistema.
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS inventario
