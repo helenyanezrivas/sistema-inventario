@@ -154,7 +154,7 @@ Estas credenciales son ficticias, públicas y están destinadas exclusivamente a
 
 ## Sobre el proyecto
 
-Este sistema fue desarrollado como proyecto de portafolio para aplicar conocimientos de desarrollo web, bases de datos, seguridad, gestión de inventario y generación de reportes.
+Este sistema fue desarrollado como proyecto personal para aplicar conocimientos de desarrollo web, bases de datos, seguridad, gestión de inventario y generación de reportes.
 
 ## Decisiones técnicas
 
