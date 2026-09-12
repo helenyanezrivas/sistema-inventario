@@ -159,11 +159,7 @@ Estas credenciales son públicas y solo están destinadas a una demostración lo
 - Transacciones para registrar ventas y anularlas sin desincronizar el stock.
 - Control de acceso basado en roles y validación centralizada de sesiones activas.
 
-## Capturas
 
-> Pendiente: agregar una captura del dashboard.
-
-> Pendiente: agregar una captura del registro de venta y sus exportaciones.
 
 ## Alcance
 
