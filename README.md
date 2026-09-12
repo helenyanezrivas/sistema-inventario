@@ -1,6 +1,6 @@
 # Sistema de Inventario
 
-Aplicación web de gestión de inventario desarrollada como proyecto de portafolio. Permite administrar productos, categorías, usuarios y ventas desde una interfaz PHP conectada a MySQL.
+Aplicación web de gestión de inventario desarrollada en PHP y MySQL. Permite administrar productos, categorías, usuarios y ventas desde una interfaz web conectada a una base de datos MySQL.
 
 ## Resumen técnico
 
